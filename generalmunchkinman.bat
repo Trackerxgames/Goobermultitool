@@ -96,11 +96,6 @@ for /L %%i in (1,1,6000) do (
 )
 
 echo                                      ------------------------------------------
-echo                                      Ping test complete.
-pause
-goto MENU
-
-echo                                      ------------------------------------------
 echo                                      Dos attack has been completed :)
 pause
 goto MENU
